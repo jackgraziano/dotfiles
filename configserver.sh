@@ -47,15 +47,25 @@ systemctl enable docker
 systemctl start docker
 usermod -aG docker "$USERNAME"
 
+echo "Instalando Ghostty e ferramentas adicionais..."
+curl -sS https://debian.griffo.io/EA0F721D231FDD3A0A17B9AC7808B4DD62C41256.asc | gpg --dearmor --yes -o /etc/apt/trusted.gpg.d/debian.griffo.io.gpg
+echo "deb https://debian.griffo.io/apt $(lsb_release -sc 2>/dev/null) main" | tee /etc/apt/sources.list.d/debian.griffo.io.list
+apt update
+apt install -y zig ghostty lazygit yazi eza uv fzf zoxide bun tigerbeetle
+
 echo "Configurando zsh como shell padrão..."
 chsh -s /bin/zsh "$USERNAME"
 
 echo "Instalando oh-my-zsh..."
-sudo -u "$USERNAME" HOME=/home/"$USERNAME" sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+sudo -u "$USERNAME" -H sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 
 echo "Configurando .zshrc..."
-sed -i 's/ZSH_THEME="robbyrussell"/ZSH_THEME="agnoster"/' /home/"$USERNAME"/.zshrc
-echo "export TERM=xterm-256color" >> /home/"$USERNAME"/.zshrc
+if [ -f /home/"$USERNAME"/.zshrc ]; then
+    sed -i 's/ZSH_THEME="robbyrussell"/ZSH_THEME="agnoster"/' /home/"$USERNAME"/.zshrc
+    echo "export TERM=xterm-256color" >> /home/"$USERNAME"/.zshrc
+else
+    echo "Erro: .zshrc não foi criado. Instalação do oh-my-zsh falhou."
+fi
 
 echo "Baixando MPICH..."
 sudo -u "$USERNAME" wget -P /home/"$USERNAME" "$MPICH_URL"
@@ -112,6 +122,9 @@ echo ""
 echo "Por favor, adicione esta chave ao GitHub antes de continuar."
 echo "Pressione ENTER quando estiver pronto..."
 read < /dev/tty
+
+echo "Adicionando GitHub aos known_hosts..."
+sudo -u "$USERNAME" ssh-keyscan github.com >> /home/"$USERNAME"/.ssh/known_hosts 2>/dev/null
 
 echo "Clonando repositório server_kit..."
 sudo -u "$USERNAME" git clone --recursive git@github.com:easywave-energy/server_kit.git /home/"$USERNAME"/server_kit
