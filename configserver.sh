@@ -55,6 +55,14 @@ systemctl enable docker
 systemctl start docker
 usermod -aG docker "$USERNAME"
 
+echo "Instalando Tailscale..."
+curl -fsSL https://pkgs.tailscale.com/stable/${DOCKER_DISTRO}/$(lsb_release -sc).noarmor.gpg | tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
+curl -fsSL https://pkgs.tailscale.com/stable/${DOCKER_DISTRO}/$(lsb_release -sc).tailscale-keyring.list | tee /etc/apt/sources.list.d/tailscale.list
+apt update
+apt install -y tailscale
+systemctl enable tailscaled
+systemctl start tailscaled
+
 echo "Instalando Ghostty e ferramentas adicionais..."
 curl -sS https://debian.griffo.io/EA0F721D231FDD3A0A17B9AC7808B4DD62C41256.asc | gpg --dearmor --yes -o /etc/apt/trusted.gpg.d/debian.griffo.io.gpg
 echo "deb https://debian.griffo.io/apt $(lsb_release -sc 2>/dev/null) main" | tee /etc/apt/sources.list.d/debian.griffo.io.list
