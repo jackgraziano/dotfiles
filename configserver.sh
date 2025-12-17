@@ -26,7 +26,7 @@ echo "Atualizando repositórios..."
 apt update
 
 echo "Instalando pacotes essenciais..."
-apt install -y build-essential htop zsh gcc gfortran git wget openssh-server
+apt install -y build-essential htop zsh gcc gfortran git wget openssh-server vim curl
 
 echo "Configurando SSH..."
 systemctl enable ssh
@@ -51,7 +51,7 @@ echo "Configurando zsh como shell padrão..."
 chsh -s /bin/zsh "$USERNAME"
 
 echo "Instalando oh-my-zsh..."
-sudo -u "$USERNAME" sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+sudo -u "$USERNAME" HOME=/home/"$USERNAME" sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 
 echo "Configurando .zshrc..."
 sed -i 's/ZSH_THEME="robbyrussell"/ZSH_THEME="agnoster"/' /home/"$USERNAME"/.zshrc
@@ -111,7 +111,7 @@ echo "---------------------------------------------------"
 echo ""
 echo "Por favor, adicione esta chave ao GitHub antes de continuar."
 echo "Pressione ENTER quando estiver pronto..."
-read
+read < /dev/tty
 
 echo "Clonando repositório server_kit..."
 sudo -u "$USERNAME" git clone --recursive git@github.com:easywave-energy/server_kit.git /home/"$USERNAME"/server_kit
