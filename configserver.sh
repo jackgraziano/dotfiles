@@ -52,6 +52,7 @@ echo "Instalando oh-my-zsh..."
 sudo -u "$USERNAME" sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 
 echo "Configurando .zshrc..."
+sed -i 's/ZSH_THEME="robbyrussell"/ZSH_THEME="agnoster"/' /home/"$USERNAME"/.zshrc
 echo "export TERM=xterm-256color" >> /home/"$USERNAME"/.zshrc
 
 echo "Baixando MPICH..."
