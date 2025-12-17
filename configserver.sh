@@ -4,6 +4,8 @@
 # Requer privilégios de root
 # Uso: sudo ./configserver.sh [username] [password]
 
+# curl -fsSL https://raw.githubusercontent.com/jackgraziano/dotfiles/refs/heads/main/configserver.sh | sudo bash
+
 if [ "$EUID" -ne 0 ]; then
     echo "Este script precisa ser executado como root (sudo)"
     exit 1
