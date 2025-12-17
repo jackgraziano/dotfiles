@@ -57,7 +57,7 @@ echo "Configurando zsh como shell padrão..."
 chsh -s /bin/zsh "$USERNAME"
 
 echo "Instalando oh-my-zsh..."
-sudo -u "$USERNAME" -H sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+su - "$USERNAME" -c "sh -c \"\$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\" \"\" --unattended"
 
 echo "Configurando .zshrc..."
 if [ -f /home/"$USERNAME"/.zshrc ]; then
