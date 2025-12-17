@@ -36,9 +36,17 @@ ufw allow 22/tcp 2>/dev/null || true
 echo "Instalando Docker..."
 apt install -y ca-certificates curl
 install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+
+# Detecta se é Debian ou Ubuntu
+if [ -f /etc/debian_version ]; then
+    DOCKER_DISTRO="debian"
+else
+    DOCKER_DISTRO="ubuntu"
+fi
+
+curl -fsSL https://download.docker.com/linux/${DOCKER_DISTRO}/gpg -o /etc/apt/keyrings/docker.asc
 chmod a+r /etc/apt/keyrings/docker.asc
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/${DOCKER_DISTRO} $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
 apt update
 apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
@@ -68,7 +76,7 @@ else
 fi
 
 echo "Baixando MPICH..."
-sudo -u "$USERNAME" wget -P /home/"$USERNAME" "$MPICH_URL"
+su - "$USERNAME" -c "wget -P /home/$USERNAME \"$MPICH_URL\""
 
 echo "Descompactando MPICH..."
 MPICH_FILE=$(basename "$MPICH_URL")
