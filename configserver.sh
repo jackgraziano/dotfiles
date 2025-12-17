@@ -33,6 +33,14 @@ systemctl enable ssh
 systemctl start ssh
 ufw allow 22/tcp 2>/dev/null || true
 
+echo "Desabilitando suspend/hibernação..."
+systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
+# Desabilita suspend no GNOME
+if command -v gsettings &> /dev/null; then
+    sudo -u "$USERNAME" DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u $USERNAME)/bus" gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-ac-type 'nothing' 2>/dev/null || true
+    sudo -u "$USERNAME" DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u $USERNAME)/bus" gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-battery-type 'nothing' 2>/dev/null || true
+fi
+
 echo "Instalando Docker..."
 apt install -y ca-certificates curl
 install -m 0755 -d /etc/apt/keyrings
