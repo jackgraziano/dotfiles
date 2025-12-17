@@ -26,7 +26,7 @@ echo "Atualizando repositórios..."
 apt update
 
 echo "Instalando pacotes essenciais..."
-apt install -y build-essential htop zsh gcc gfortran git wget openssh-server vim curl
+apt install -y build-essential htop zsh gcc gfortran git wget openssh-server vim curl lm-sensors sensors-applet
 
 echo "Configurando SSH..."
 systemctl enable ssh
