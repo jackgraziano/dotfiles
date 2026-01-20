@@ -39,6 +39,9 @@ echo "$USERNAME:$PASSWORD" | chpasswd
 
 echo "Usuário $USERNAME criado com sucesso!"
 
+echo "Removendo repositórios inválidos..."
+rm -f /etc/apt/sources.list.d/*griffo* /etc/apt/sources.list.d/*docker* 2>/dev/null || true
+
 echo "Atualizando repositórios..."
 apt update
 
@@ -62,9 +65,10 @@ echo "Instalando Docker..."
 apt install -y ca-certificates curl
 install -m 0755 -d /etc/apt/keyrings
 
-# Detecta se é Debian ou Ubuntu
-if [ -f /etc/debian_version ]; then
-    DOCKER_DISTRO="debian"
+# Detecta a distribuição corretamente
+if [ -f /etc/os-release ]; then
+    . /etc/os-release
+    DOCKER_DISTRO="$ID"
 else
     DOCKER_DISTRO="ubuntu"
 fi
@@ -88,11 +92,16 @@ apt install -y tailscale
 systemctl enable tailscaled
 systemctl start tailscaled
 
-echo "Instalando Ghostty e ferramentas adicionais..."
-curl -sS https://debian.griffo.io/EA0F721D231FDD3A0A17B9AC7808B4DD62C41256.asc | gpg --dearmor --yes -o /etc/apt/trusted.gpg.d/debian.griffo.io.gpg
-echo "deb https://debian.griffo.io/apt $(lsb_release -sc 2>/dev/null) main" | tee /etc/apt/sources.list.d/debian.griffo.io.list
-apt update
-apt install -y zig ghostty lazygit yazi eza uv fzf zoxide bun tigerbeetle
+echo "Instalando ferramentas adicionais..."
+# Tenta adicionar repositório griffo.io, mas continua mesmo se falhar
+if curl -sS https://debian.griffo.io/EA0F721D231FDD3A0A17B9AC7808B4DD62C41256.asc | gpg --dearmor --yes -o /etc/apt/trusted.gpg.d/debian.griffo.io.gpg 2>/dev/null; then
+    echo "deb https://debian.griffo.io/apt $(lsb_release -sc 2>/dev/null) main" | tee /etc/apt/sources.list.d/debian.griffo.io.list
+    apt update
+    # Instala pacotes disponíveis, ignora os que falharem
+    apt install -y zig ghostty lazygit yazi eza uv fzf zoxide bun tigerbeetle 2>/dev/null || true
+else
+    echo "Aviso: Repositório griffo.io não disponível, pulando instalação de algumas ferramentas..."
+fi
 
 echo "Configurando zsh como shell padrão..."
 chsh -s /bin/zsh "$USERNAME"
@@ -173,7 +182,11 @@ echo "Configurando permissões de execução..."
 chmod +x /home/"$USERNAME"/server_kit/bin/*
 
 echo "Desabilitando Hyper-Threading permanentemente..."
-echo off > /sys/devices/system/cpu/smt/control
+if [ -f /sys/devices/system/cpu/smt/control ]; then
+    echo off > /sys/devices/system/cpu/smt/control
+else
+    echo "Aviso: Sistema não suporta controle de SMT/Hyper-Threading"
+fi
 
 # Torna a desabilitação do Hyper-Threading permanente
 cat > /etc/systemd/system/disable-smt.service << 'EOF'
