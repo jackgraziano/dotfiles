@@ -2,7 +2,7 @@
 
 # Script de configuração do servidor
 # Requer privilégios de root
-# Uso: sudo ./configserver.sh [username] [password]
+# Uso: sudo ./configserver.sh
 
 # sudo apt update && sudo apt install -y curl && curl -fsSL https://raw.githubusercontent.com/jackgraziano/dotfiles/refs/heads/main/configserver.sh | sudo bash
 
@@ -12,8 +12,25 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 # Parâmetros configuráveis
-USERNAME=${1:-myria-user}
-PASSWORD=${2:-myria}
+USERNAME="sinapse"
+
+# Solicita a senha do usuário
+echo "Digite a senha para o usuário $USERNAME:"
+read -s PASSWORD
+echo ""
+echo "Confirme a senha:"
+read -s PASSWORD_CONFIRM
+echo ""
+
+if [ "$PASSWORD" != "$PASSWORD_CONFIRM" ]; then
+    echo "Erro: As senhas não coincidem!"
+    exit 1
+fi
+
+if [ -z "$PASSWORD" ]; then
+    echo "Erro: A senha não pode estar vazia!"
+    exit 1
+fi
 MPICH_URL="https://www.mpich.org/static/downloads/4.2.1/mpich-4.2.1.tar.gz"
 
 echo "Criando usuário $USERNAME..."
@@ -136,7 +153,6 @@ echo "Para copiar a chave de outra máquina, conecte via SSH:"
 echo ""
 SERVER_IP=$(hostname -I | awk '{print $1}')
 echo "  ssh $USERNAME@$SERVER_IP"
-echo "  Senha: $PASSWORD"
 echo ""
 echo "Depois execute:"
 echo "  cat ~/.ssh/id_ed25519.pub"
@@ -155,5 +171,26 @@ sudo -u "$USERNAME" git clone --recursive git@github.com:easywave-energy/server_
 
 echo "Configurando permissões de execução..."
 chmod +x /home/"$USERNAME"/server_kit/bin/*
+
+echo "Desabilitando Hyper-Threading permanentemente..."
+echo off > /sys/devices/system/cpu/smt/control
+
+# Torna a desabilitação do Hyper-Threading permanente
+cat > /etc/systemd/system/disable-smt.service << 'EOF'
+[Unit]
+Description=Disable SMT/Hyper-Threading
+DefaultDependencies=no
+After=sysinit.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'echo off > /sys/devices/system/cpu/smt/control'
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl enable disable-smt.service
 
 echo "Instalação concluída!"
