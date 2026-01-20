@@ -16,10 +16,10 @@ USERNAME="sinapse"
 
 # Solicita a senha do usuário
 echo "Digite a senha para o usuário $USERNAME:"
-read -s PASSWORD
+read -s PASSWORD < /dev/tty
 echo ""
 echo "Confirme a senha:"
-read -s PASSWORD_CONFIRM
+read -s PASSWORD_CONFIRM < /dev/tty
 echo ""
 
 if [ "$PASSWORD" != "$PASSWORD_CONFIRM" ]; then
